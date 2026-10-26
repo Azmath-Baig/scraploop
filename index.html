@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScrapLoop: building leftovers, second life</title>
+  <meta name="description" content="List leftover construction and renovation materials. Buyers, recyclers and DIYers contact you directly on WhatsApp.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">♻</span><span data-app-name>ScrapLoop</span></a>
+    <nav class="topnav">
+      <button class="btn ghost" id="mineBtn" type="button">My listings</button>
+      <button class="btn primary" data-action="post" type="button">+ List materials</button>
+    </nav>
+  </header>
+
+  <div id="demoBanner" class="banner" hidden>
+    <strong>Demo mode.</strong> Listings and stats are saved only in this browser. Connect Supabase in <code>config.js</code> to go live.
+    <button class="linklike" id="resetDemo" type="button">Reset demo data</button>
+  </div>
+
+  <main>
+    <section class="hero">
+      <h1>Leftover building materials? Someone needs them.</h1>
+      <p>List steel, tiles, wood, doors, fixtures and other leftovers from construction or renovation. Buyers, recyclers and DIYers contact you directly on WhatsApp. No fees, no sign-up.</p>
+      <div class="hero-ctas">
+        <button class="btn primary lg" data-action="post" type="button">I have materials to give or sell</button>
+        <a class="btn lg" href="#browse" id="browseCta">I'm looking for materials</a>
+      </div>
+    </section>
+
+    <section id="browse" class="browse">
+      <div class="filters">
+        <input type="search" id="q" placeholder="Search steel, tiles, doors…" aria-label="Search listings">
+        <select id="cityFilter" aria-label="City"><option value="">All cities</option></select>
+        <div class="seg" id="intentFilter" role="group" aria-label="Type">
+          <button type="button" data-intent="all" class="on">All</button>
+          <button type="button" data-intent="reuse">Reuse</button>
+          <button type="button" data-intent="recycle">Recycle</button>
+          <button type="button" data-intent="free">Free</button>
+        </div>
+      </div>
+      <div class="chips" id="categoryChips"></div>
+      <p class="result-count" id="resultCount"></p>
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span data-app-name>ScrapLoop</span> is a prototype. Meet in a safe place and check materials before paying.
+    · <a href="stats.html">Stats</a>
+  </footer>
+
+  <button class="feedback-fab" id="feedbackBtn" type="button">💬 Feedback</button>
+
+  <!-- Listing detail -->
+  <dialog id="detailDialog" class="sheet"><div id="detailBody"></div></dialog>
+
+  <!-- Post a listing -->
+  <dialog id="postDialog" class="sheet">
+    <form id="postForm" novalidate>
+      <div class="sheet-head">
+        <h2>List your materials</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+      </div>
+
+      <label class="photo-pick" id="photoPick">
+        <input type="file" name="photo" accept="image/*" id="photoInput">
+        <span id="photoHint">📷 Add a photo<br><small>Listings with photos get far more contacts</small></span>
+        <img id="photoPreview" alt="" hidden>
+      </label>
+
+      <label>What is it? *
+        <input name="title" required maxlength="120" placeholder="e.g. Leftover porcelain tiles 60×60">
+      </label>
+
+      <label>Category *
+        <select name="category" required id="categorySelect"><option value="">Choose…</option></select>
+      </label>
+
+      <fieldset class="radio-row">
+        <legend>Condition *</legend>
+        <label><input type="radio" name="intent" value="reuse" checked> Usable as is</label>
+        <label><input type="radio" name="intent" value="recycle"> For recycling / scrap</label>
+      </fieldset>
+
+      <label>Quantity
+        <input name="quantity" maxlength="60" placeholder="e.g. 40 m², 1.2 tonnes, 6 pcs">
+      </label>
+
+      <fieldset class="radio-row">
+        <legend>Price *</legend>
+        <label><input type="radio" name="price_type" value="fixed" checked> Set a price</label>
+        <label><input type="radio" name="price_type" value="offer"> Make an offer</label>
+        <label><input type="radio" name="price_type" value="free"> Free, just collect</label>
+      </fieldset>
+      <label id="priceField">Price (<span data-currency></span>)
+        <input name="price" type="number" min="0" step="1" inputmode="numeric" placeholder="0">
+      </label>
+
+      <div class="two">
+        <label>City *
+          <select name="city" required id="citySelect"></select>
+        </label>
+        <label>Area
+          <input name="area" maxlength="60" placeholder="e.g. Al Quoz">
+        </label>
+      </div>
+
+      <label>Details
+        <textarea name="description" rows="3" maxlength="800" placeholder="Condition, sizes, pickup times, who pays transport…"></textarea>
+      </label>
+
+      <div class="two">
+        <label>Your name *
+          <input name="seller_name" required maxlength="60" autocomplete="name">
+        </label>
+        <label>WhatsApp number *
+          <input name="seller_phone" required type="tel" maxlength="20" autocomplete="tel" placeholder="050 123 4567">
+        </label>
+      </div>
+      <p class="fineprint">Your name and number are shown to buyers so they can message you.</p>
+
+      <p class="form-error" id="postError" role="alert"></p>
+      <button class="btn primary lg block" type="submit" id="postSubmit">Publish listing</button>
+    </form>
+  </dialog>
+
+  <!-- My listings -->
+  <dialog id="mineDialog" class="sheet">
+    <div class="sheet-head">
+      <h2>My listings</h2>
+      <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+    </div>
+    <p class="fineprint">Listings you posted from this browser.</p>
+    <div id="mineBody"></div>
+  </dialog>
+
+  <!-- Seller closes a listing: tells us whether the deal came through ScrapLoop -->
+  <dialog id="closeDialog" class="sheet">
+    <form id="closeForm" novalidate>
+      <div class="sheet-head">
+        <h2>Close this listing</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+      </div>
+      <p class="muted" id="closeTitle"></p>
+      <fieldset class="radio-col">
+        <legend>What happened?</legend>
+        <label><input type="radio" name="via" value="platform" checked> Sold / given to someone who found it on <span data-app-name>ScrapLoop</span></label>
+        <label><input type="radio" name="via" value="elsewhere"> Sold / given to someone I found elsewhere</label>
+        <label><input type="radio" name="via" value="not_sold"> Not sold, just removing it</label>
+      </fieldset>
+      <label id="closeRefField">Ref code from their WhatsApp message <span class="muted">(optional)</span>
+        <input name="ref" maxlength="12" placeholder="SL-XXXX" autocapitalize="characters">
+      </label>
+      <label id="closePriceField">Final price (<span data-currency></span>) <span class="muted">(optional, private)</span>
+        <input name="price" type="number" min="0" step="1" inputmode="numeric" placeholder="0 if free">
+      </label>
+      <p class="form-error" id="closeError" role="alert"></p>
+      <button class="btn primary block" type="submit" id="closeSubmit">Close listing</button>
+    </form>
+  </dialog>
+
+  <!-- Buyer follow-up after contacting a seller -->
+  <dialog id="followupDialog" class="sheet">
+    <div class="sheet-head">
+      <h2>Quick question</h2>
+      <button type="button" class="icon-btn" id="followupLater" aria-label="Ask me later">✕</button>
+    </div>
+    <p>Did you get <strong id="followupTitle"></strong>?</p>
+    <div class="answer-row" id="followupAnswers">
+      <button type="button" class="btn" data-answer="yes">✅ Yes, got it</button>
+      <button type="button" class="btn" data-answer="talking">💬 Still talking</button>
+      <button type="button" class="btn" data-answer="no">❌ No</button>
+    </div>
+    <div id="followupReasons" hidden>
+      <p class="muted">What got in the way?</p>
+      <div class="chips wrap">
+        <button type="button" class="chip" data-reason="no_reply">Seller didn't reply</button>
+        <button type="button" class="chip" data-reason="already_sold">Already sold</button>
+        <button type="button" class="chip" data-reason="price">Too expensive</button>
+        <button type="button" class="chip" data-reason="transport">Transport / too far</button>
+        <button type="button" class="chip" data-reason="quality">Not as described</button>
+        <button type="button" class="chip" data-reason="changed_mind">Changed my mind</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Feedback -->
+  <dialog id="feedbackDialog" class="sheet">
+    <form id="feedbackForm">
+      <div class="sheet-head">
+        <h2>What's missing or broken?</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+      </div>
+      <label>I'm mostly a…
+        <select name="role">
+          <option value="seller">Seller / contractor</option>
+          <option value="buyer">Buyer / DIYer</option>
+          <option value="recycler">Recycler / scrap dealer</option>
+          <option value="visitor">Just looking</option>
+        </select>
+      </label>
+      <label>Tell us honestly
+        <textarea name="message" rows="4" required maxlength="1000" placeholder="I couldn't find… / I didn't trust… / I wish it…"></textarea>
+      </label>
+      <button class="btn primary block" type="submit">Send</button>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="store.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

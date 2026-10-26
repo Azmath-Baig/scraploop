@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ScrapLoop Stats</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">♻</span><span data-app-name>ScrapLoop</span>&nbsp;<span class="muted">stats</span></a>
+    <nav class="topnav"><a class="btn" href="./">Back to app</a></nav>
+  </header>
+
+  <div id="demoBanner" class="banner" hidden><strong>Demo mode.</strong> These numbers come from this browser only.</div>
+
+  <main>
+    <div class="stats-head">
+      <div>
+        <h1>Is anyone using it?</h1>
+        <p class="muted" id="updated">Loading…</p>
+      </div>
+      <div class="stats-controls">
+        <select id="range" aria-label="Date range">
+          <option value="1">Last 24 hours</option>
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="0">All time</option>
+        </select>
+        <label><input type="checkbox" id="hideInternal" checked> Hide team visits</label>
+        <button class="btn sm" id="markInternal" type="button"></button>
+        <button class="btn sm" id="exportCsv" type="button">Export events CSV</button>
+      </div>
+    </div>
+
+    <section class="kpis" id="kpis"></section>
+
+    <div class="panels">
+      <section class="panel">
+        <h2>Buyer funnel</h2>
+        <p class="sub">Unique visitors reaching each step</p>
+        <div id="buyerFunnel"></div>
+      </section>
+      <section class="panel">
+        <h2>Seller funnel</h2>
+        <p class="sub">Unique visitors reaching each step</p>
+        <div id="sellerFunnel"></div>
+      </section>
+    </div>
+    <br>
+
+    <section class="panel">
+      <h2>Deals: did it happen, and did it happen through us?</h2>
+      <p class="sub">Contacts happen on WhatsApp, so outcomes come from sellers closing listings and buyers answering the follow-up question</p>
+      <div class="kpis" id="dealKpis"></div>
+      <div class="panels">
+        <div>
+          <h3 class="h3">Seller-reported outcomes</h3>
+          <div class="table-wrap" id="dealOutcomes"></div>
+        </div>
+        <div>
+          <h3 class="h3">Buyer follow-up answers</h3>
+          <div class="table-wrap" id="buyerAnswers"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Sellers to check in with</h2>
+      <p class="sub" id="checkinSub"></p>
+      <div class="table-wrap" id="checkins"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Daily visitors</h2>
+      <div class="daily" id="daily"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Where visitors came from</h2>
+      <p class="sub">First-touch <code>?src=</code> tag, or referrer when untagged</p>
+      <div class="table-wrap" id="sources"></div>
+    </section>
+
+    <div class="panels">
+      <section class="panel">
+        <h2>Categories</h2>
+        <div class="table-wrap" id="categories"></div>
+      </section>
+      <section class="panel">
+        <h2>What people searched for</h2>
+        <p class="sub">Searches with 0 results show unmet demand</p>
+        <div class="table-wrap" id="searches"></div>
+      </section>
+    </div>
+    <br>
+
+    <section class="panel">
+      <h2>Problems</h2>
+      <div class="table-wrap" id="problems"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Feedback</h2>
+      <div id="feedback"></div>
+    </section>
+  </main>
+
+  <footer class="footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="store.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>
