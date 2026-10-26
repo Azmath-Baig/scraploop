@@ -171,9 +171,15 @@
     const ref = S.newRef();
     const msg = `Hi ${l.seller_name}, I saw your listing "${l.title}" on ${cfg.APP_NAME}. Is it still available? (Ref ${ref})`;
     const sold = l.status !== 'available';
+    const isMine = S.myListings().some((m) => m.id === l.id);
 
     let contact;
-    if (l.is_sample) {
+    if (isMine && !sold) {
+      contact = `<div class="note owner">
+          <strong>This is your listing.</strong> When it's gone, close it so buyers stop messaging you.
+          <button class="btn primary block" id="ownerCloseBtn" type="button">Sold / close listing</button>
+        </div>`;
+    } else if (l.is_sample) {
       contact = `<p class="note">This is a sample listing for the demo, so there's no real seller to contact.</p>`;
     } else if (sold) {
       contact = `<p class="note">This item has been marked as sold.</p>`;
@@ -209,6 +215,7 @@
     $('#waBtn')?.addEventListener('click', onContact('whatsapp'));
     $('#callBtn')?.addEventListener('click', onContact('call'));
     $('#shareBtn').addEventListener('click', () => share(l, 'share'));
+    $('#ownerCloseBtn')?.addEventListener('click', () => { $('#detailDialog').close(); openClose(l.id); });
 
     S.track('listing_view', { category: l.category, city: l.city, sample: l.is_sample || undefined }, l.is_sample ? null : l.id);
     history.replaceState(null, '', `#l=${l.id}`);
