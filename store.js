@@ -53,12 +53,20 @@
   const urlSrc = new URLSearchParams(location.search).get('src');
   let firstSrc = ls.get('sl_src', null);
   if (!firstSrc) {
-    firstSrc = urlSrc || (document.referrer ? hostOf(document.referrer) : 'direct');
+    firstSrc = urlSrc || externalReferrer() || 'direct';
     ls.set('sl_src', firstSrc);
   }
 
   function hostOf(url) {
     try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return 'unknown'; }
+  }
+
+  // Our own pages and other *.netlify.app names of this site (e.g. before a rename) aren't a real source.
+  function externalReferrer() {
+    if (!document.referrer) return '';
+    const host = hostOf(document.referrer);
+    if (host === location.hostname.replace(/^www\./, '') || host.endsWith('.netlify.app')) return '';
+    return host;
   }
 
   const isInternal = () => ls.get('sl_internal', false) === true;
